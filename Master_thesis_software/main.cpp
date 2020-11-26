@@ -17,6 +17,8 @@
 //
 //In the real project this app communicate with microcontroller unit (MCU) and sent calculated data. In the project used STM32F411VET
 //and additional servos controller (https://www.pololu.com/product/1350). 
+//To can use OpenCV library it is necessary to change some project configuration. How to do that in MS Visual Studio see:
+//https://www.youtube.com/watch?v=M-VHaLHC4XI
 
 
 int main()
