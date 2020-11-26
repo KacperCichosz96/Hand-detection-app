@@ -15,6 +15,19 @@
 //								1st mode - "ToDetect_1.jpg", "ToDetect_2.jpg" or "ToDetect_3.jpg"
 //								2nd mode - "Rev2.jpg", "Rev3.jpg", "Rev3.jpg" or "Rev5.jpg"
 //
+//In the project, for proper working of this app, I made numerous assumptions:
+//
+//		1)	The hand should be placed as straight as possible in the central part of the photo, the rotation of the wrist should only take place
+//			in relation to the vertical axis, the forearm should be directed as vertically as possible.
+//		2)	The hand should be photographed under strong lighting conditions, on a uniform background, far enough away from the surface on the
+//			back that any shadows are as little visible as possible, and preferably not visible.
+//		3)	In the calibration photos, the fingers should be straightened and separated, the same in the case of photos for which the angle of
+//			rotation is determined.
+//		4)	The hand is assumed to be in the plane of the body at shoulder height. In such a situation, the wrist may rotate freely about the
+//			vertical axis in an angular range from 0 to about 90 degrees.
+//		5)	It is possible to move the hand along the direction of the lens axis, but it should not be too large to get the most accurate result
+//			of the gesture recognition.
+//
 //In the real project this app communicate with microcontroller unit (MCU) and sent calculated data. In the project used STM32F411VET
 //and additional servos controller (https://www.pololu.com/product/1350). 
 //To can use OpenCV library it is necessary to change some project configuration. How to do that in MS Visual Studio see:
