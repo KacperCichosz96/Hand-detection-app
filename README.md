@@ -10,5 +10,5 @@ of rotation in wrist. More details about working of the app are included in its 
 made as a mechanical subsystem of the entire project). MCU app was written in Eclipse IDE, MCU configuration was done using STM32CubeMX. Used MCU is STM32F411VET on
 STM32F411E-Disco.
 
-Folder "Results" contains example images which are results of hand gesture recogntion (calibration image: ToCalib_1.jpg , detection image: ToDetect_3.jpg). In the folder you can
+Folder "Results" contains example images which are results of hand gesture recogntion (calibration image: ToCalib_fingers.jpg , detection image: ToDetect_3.jpg). In the folder you can
 find also photos of real model after this gesture recogntion.
