@@ -13,7 +13,7 @@
 //in side view ("ToCalib_side.jpg" from example images). To see how app works with example images user can use as fin_img_name:
 //
 //								1st mode - "ToDetect_1.jpg", "ToDetect_2.jpg" or "ToDetect_3.jpg"
-//								2nd mode - "Rev2.jpg", "Rev3.jpg", "Rev3.jpg" or "Rev5.jpg"
+//								2nd mode - "Rev2.jpg", "Rev3.jpg", "Rev4.jpg" or "Rev5.jpg"
 //
 //In the project, for proper working of this app, I made numerous assumptions:
 //
