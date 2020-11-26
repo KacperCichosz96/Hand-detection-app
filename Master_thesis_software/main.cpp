@@ -3,33 +3,49 @@
 #include "MCU_communication.h"
 
 
+//This application is a part of my master thesis project called "Project of a hand controlled using a vision system".
+//The app can work in 2 modes:
+//								1 - fingers positions detection (user types "F" in console)
+//								2 - calculating of revolution angle in wrist (user types "R" in console)
+//
+//In the 1st mode app needs just one image to calibration ("ToCalib_fingers.jpg" from example images). 
+//In the 2nd mode app needs two images to calibration - one in front view ("ToCalib_front.jpg" from example images) and one
+//in side view ("ToCalib_side.jpg" from example images). To see how app works with example images user can use as fin_img_name:
+//
+//								1st mode - "ToDetect_1.jpg", "ToDetect_2.jpg" or "ToDetect_3.jpg"
+//								2nd mode - "Rev2.jpg", "Rev3.jpg", "Rev3.jpg" or "Rev5.jpg"
+//
+//In the real project this app communicate with microcontroller unit (MCU) and sent calculated data. In the project used STM32F411VET
+//and additional servos controller (https://www.pololu.com/product/1350). 
+
+
 int main()
 {
 	setlocale(LC_ALL, "");
 
-	//nazwy plików ze zdjeciami:
-	string fin_img_name("4.jpg");			//nazwa pliku do rozpoznania po³o¿enia palców, wraz z rozszerzeniem pliku
-	string calib_side_name("R_side.jpg");	//nazwa pliku do kalibracji z boku, wraz z rozszerzeniem pliku
-	string rot_detect_name("R1.jpg");		//nazwa pliku do detekcji obrotu, wraz z rozszerzeniem pliku
+	//names of images:
+	string calib_front_name("ToCalib_fingers.jpg");	//name of image to calibration in BOTH MODE in front view
+	string fin_img_name("ToDetect_3.jpg");			//name of image to detect fingers positions in FINGER DETECT MODE
+	string calib_side_name("ToCalib_side.jpg");		//name of image to calibration in REVOLUTION DETECT MODE in side view
+	string rot_detect_name("Rev2.jpg");				//name of image to calculate an angle of revolution in wrist in REVOLUTION DETECT MODE
 	
-	//dane do wys³ania do MCU
-	int fin_pos[5] = { 0 };				//dane dotycz¹ce po³o¿enia palców 
-	uint8_t rotation = 0;				//dane dotycz¹ce obrotu
+	//data to send to MCU:
+	int fin_pos[5] = { 0 };				//finger position data 
+	uint8_t rotation = 0;				//value of revolution angle
 	move_mode fin_or_rot;
 
-	//kalibracja - front:
-	Mat calib_FR;				//nazwa pliku ze zdjeciem do kalibracji od frontu, wraz z rozszerzeniem pliku
+	//Calibration - front (both modes):
+	Mat calib_FR;				
+	calib_FR = imread(calib_front_name);
 
-	calib_FR = imread("1.jpg");
-
-	if (calib_FR.data == NULL)		//je¿eli nie uda³o sie wczytaæ pliku ze zdjêciem to obiekt Mat jest pusty, tj. ma wartoœæ NULL
+	if (calib_FR.data == NULL)		
 	{
-		cout << "Nie uda³o siê wczytaæ pliku do kalibracji od frontu (obiekt \'calib_FR\") !!!\a" << endl;
-		Sleep(4000);
+		cout << "Failed to load an image to calibration in front view (image name:\"" << calib_front_name << "\")\a" << endl;
+		Sleep(3000);
 		exit(EXIT_FAILURE);
 	}
 
-	string calib_FR_name("Calibration ROTATION front");
+	string calib_FR_name("Calib. front view");		
 	Rect calib_FR_rect;
 	vector<Point> calib_FR_contour;
 	Point calib_FR_wrist_right;
@@ -39,29 +55,31 @@ int main()
 	
 	char detection_type = 0;
 
-	//podstawowa detekcja dokonywana zarówno przy rozpoznawaniu palców jak i obrotu d³oni:
+	//basic part of calibration in front mode (done in both modes):
 	basic_detection(calib_FR, calib_FR_name, calib_FR_rect, calib_FR_contour, calib_FR_wrist_right, calib_FR_wrist_left, calib_FR_wrist_width);
 
-	cout << endl << "Wybierz rodzaj rozpoznawania d³oni, wpisz:\a" << endl;
-	cout << "\"P\" - ¿eby rozpoznaæ po³o¿enia palców" << endl;
-	cout << "\"O\" - ¿eby rozpoznac obrót d³oni" << endl;
+	cout << endl << "Choose a mode of hand detection, write:\a" << endl;
+	cout << "\"F\" - to find fingers positions" << endl;
+	cout << "\"R\" - to calculate revolution angle in wrist" << endl;
 
 	detection_type = cin.get();
-	while (detection_type != 'P' && detection_type != 'p' && detection_type != 'O' && detection_type != 'o')			//tak zmieniæ wszêdzie
+	while (detection_type != 'F' && detection_type != 'f' && detection_type != 'R' && detection_type != 'r')
 		detection_type = cin.get();
-	
+	while (cin.get() != '\n')
+		continue;
+
 	switch (detection_type)
 	{
-	case 'P':
-	case'p':
+	case 'F':
+	case'f':
 		fin_or_rot = FINGERS_MOVE;
-		//dalsza czêœæ kalibracji od frontu, która jest potrzebna tylko przy detekcji po³o¿enia palców:
+		//the next part of calibration in front view mode (necessary just to detect fingers positions):
 		calibration_front_function(calib_FR, calib_FR_name, calib_FR_rect, calib_FR_contour, calib_FR_wrist_right, calib_FR_wrist_left, cal_fin);
-		//detekcja po³o¿enia palców
+		//detection fingers positions:
 		fingers_detection_function(fin_img_name, calib_FR_wrist_width, cal_fin, fin_pos);
 		break;
-	case 'O':
-	case'o':
+	case 'R':
+	case'r':
 		fin_or_rot = ANGLE_ROTATION;
 		rotation = rotation_detection_function(calib_side_name, rot_detect_name, calib_FR_rect);
 		break;
@@ -70,19 +88,25 @@ int main()
 	bool is_OK = false;
 	char ready_to_send = 0;
 
-	cout << "Czy detekcja prebieg³a poprawnie i uruchomiæ rêkê?\t 'T' - tak; 'N' - nie" << endl;
+	cout << "Is the detection successfull and activate the arm?\t 'Y' - yes; 'N' - no" << endl;
 	ready_to_send = cin.get();
-	while (ready_to_send != 'T' && ready_to_send != 't' && ready_to_send != 'N' && ready_to_send != 'n')
+	while (ready_to_send != 'Y' && ready_to_send != 'y' && ready_to_send != 'N' && ready_to_send != 'n')
+	{
+		while (cin.get() != '\n')
+			continue;
 		ready_to_send = cin.get();
+	}
+	while (cin.get() != '\n')
+		continue;
 
 	if (ready_to_send == 'N' || ready_to_send == 'n')
 	{
-		cout << "Wybrano zakoñczenie programu\a" << endl << endl;
+		cout << "You chose to terminate the application\a" << endl << endl;
 		Sleep(3000);
 		exit(EXIT_FAILURE);
 	}
 
-	send_data("COM6", fin_pos, rotation, fin_or_rot);
+	send_data("COM6", fin_pos, rotation, fin_or_rot);	//you have to check and choose the proper COM port name, the one where you connected MCU
 	
 	system("pause");
 	return 0;

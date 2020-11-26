@@ -35,12 +35,12 @@ enum wrist_side
 };
 
 
-void display_img(Mat& src, string name);	//wyœwietlanie zmniejszonego obrazu
+void display_img(Mat& src, string name);	
 void my_thresholding(Mat& src, Mat& img_org, double factor);
 int hand_contours(Mat& src, vector<vector<Point>>& ctrs);
 int biggest_countour(vector<vector<Point>>& ctrs);
 int point_in_contour(vector<Point>& h_contour, Point RB_point);
-bool forearm_horizontal(vector<Point>& h_contour, const int index, wrist_side side, int distance);
+bool forearm_vertical(vector<Point>& h_contour, const int index, wrist_side side, int distance);
 Point find_wrist(vector<Point>& h_contour, const int index, wrist_side side);
 void find_apex_valley(const vector<Point>& h_contour, const int index, vector<Point>& apexes, vector<Point>& valleys, int init_dis, int max_dist, const apex_velley_mode C_or_D);
 void find_thumb_apex(const vector<Point>& h_contour, const int index, Point& apex, int min_dist);

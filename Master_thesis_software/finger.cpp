@@ -9,7 +9,7 @@ Finger::Finger(Mat & init_img, Point top_left, Point bottom_right, Point finger_
 	region_size = finger_height / 4;
 	top_apex_dist = apex.y - top_left.y;
 	
-	//towrzenie regionów:
+	//creating regions for a specific finger (except thumb):
 	regions[0][0] = top_left;
 	regions[0][1] = regions[0][0] + Point(all_region.width, 0);
 	regions[0][2] = Point(all_region.x + all_region.width, apex.y + region_size);
@@ -30,6 +30,7 @@ Finger::Finger(Mat & init_img, Point top_left, Point bottom_right, f_mode mode) 
 	region_size = (bottom_right.x - top_left.x)/4;
 	finger_height = 0;
 
+	//creating regions for a specific finger (except thumb):
 	regions[0][0] = Point(bottom_right.x, top_left.y);
 	regions[0][1] = regions[0][0] + Point(0, all_region.height);
 	regions[0][2] = regions[0][1] - Point(region_size, 0);
@@ -54,12 +55,12 @@ Finger::Finger(Mat& init_img, Point start_point, Finger fin, double scale, f_mod
 	case FINGER_MODE:
 		bottom_right = Point(start_point.x + scale * fin.all_region.width, start_point.y + scale * fin.all_region.height);
 		all_region = Rect(start_point, bottom_right);
-		apex = Point(0, 0);		//ten punkt jest nam niepotrzebny przy detekcji palców
+		apex = Point(0, 0);		//during detection apex point is not necessary
 		finger_height = fin.finger_height*scale;
 		region_size = finger_height / 4;
 		top_apex_dist = fin.top_apex_dist*scale;
 
-		//towrzenie regionów:
+		//creating regions for a specific finger (except thumb):
 		regions[0][0] = start_point;
 		regions[0][1] = regions[0][0] + Point(all_region.width, 0);
 		regions[0][2] = Point(start_point.x + all_region.width, start_point.y + top_apex_dist + region_size);
@@ -76,12 +77,12 @@ Finger::Finger(Mat& init_img, Point start_point, Finger fin, double scale, f_mod
 	case THUMB_MODE:
 		top_left = Point(start_point.x - scale * fin.all_region.width, start_point.y - scale * fin.all_region.height);
 		all_region = Rect(top_left, start_point);
-		apex = Point(0, 0);		//ten punkt jest nam niepotrzebny przy detekcji palców
-		finger_height = 0;		//ten wymiar jest niepotrzebny przy kciuku
-		top_apex_dist = 0;		//ten wymiar jest niepotrzebny przy kciuku
+		apex = Point(0, 0);		//during detection apex point is not necessary
+		finger_height = 0;		//during detection finger_height is not necessary
+		top_apex_dist = 0;		//during detection top_apex_dist is not necessary
 		region_size = fin.region_size*scale;
 
-		//towrzenie regionów:
+		//creating regions for a thumb:
 		regions[0][0] = Point(start_point.x, top_left.y);
 		regions[0][1] = start_point;
 		regions[0][2] = regions[0][1] - Point(region_size, 0);
@@ -108,7 +109,7 @@ void Finger::draw_regions()
 
 int Finger::find_fin_location(Point f_top)
 {
-	int location_region = 0;	//domyœlnie palec jest z³o¿ony, tzn. znajduje siê poza wyznaczonymi regionami, czyli ma indeks równy regions.size()
+	int location_region = 0;	//defaultly finger is hidden, that means is located under defined regions and has index equal to 0
 	bool found = false;
 
 	while (location_region < 4)
@@ -124,15 +125,18 @@ int Finger::find_fin_location(Point f_top)
 	if (!found)
 		location_region = 4;
 
-	//rysowanie obszaru, w którym wykryto punkt, je¿el palec nie jest schowany, czyli dla regionu o idndeksie 4
+	//drawing green line around the region where finger was found
 	if(location_region != 4)
 		rectangle(img, regions[location_region][0], regions[location_region][2], Scalar(0, 255, 0), 20);	
 	
 	return location_region;
 }
 
-Finger & Finger::operator=(Finger copied_finger)
+Finger & Finger::operator=(const Finger& copied_finger)
 {
+	if (this == &copied_finger)
+		return *this;
+
 	this->all_region = copied_finger.all_region;
 	this->regions = copied_finger.regions;
 	this->apex = copied_finger.apex;
@@ -141,8 +145,4 @@ Finger & Finger::operator=(Finger copied_finger)
 	this->top_apex_dist = copied_finger.top_apex_dist;
 
 	return *this;
-}
-
-Finger::~Finger()
-{
 }
